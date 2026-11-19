@@ -1,0 +1,182 @@
+{
+  "name": "start_3_2",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Bitte analysiere die TXT-Datei:{{ $json.data }}",
+        "options": {
+          "systemMessage": "Du bist ein erfahrener Kundendienstmitarbeiter und kannst gut mit Bestellungen umgehen. Deine Aufgabe ist es, die bereitgestellten TXT-Daten gründlich zu analysieren.\n\nFühre folgende Analysen durch:\n1. Bestellübersicht: Anzahl der Bestellungen\n2. Auskunft über die Bestellung\n3. Nette Anschreiben an die Person"
+        }
+      },
+      "id": "db564208-34b8-4dad-9a9c-593b81ca71bc",
+      "name": "Data Analysis Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        384,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "b84a03df-4930-448a-8ec2-7343d5a7d646",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        304
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "DjesWcieH54WYu8u",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "Session_2"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        528,
+        304
+      ],
+      "id": "807067a0-6077-44cf-8be7-4512251ffe8a",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "formTitle": "Document",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "File",
+              "fieldType": "file",
+              "acceptFileTypes": ".txt"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -144,
+        80
+      ],
+      "id": "6aed3234-38dd-4fb2-b4e0-71a99790ec85",
+      "name": "On form submission",
+      "webhookId": "f0ab5d86-872b-484a-95d4-91126375b5ae"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "binaryPropertyName": "File",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        112,
+        80
+      ],
+      "id": "2b295224-3ab9-4515-b06b-41467bf61d3e",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst text = $input.first().json.output;\n\nreturn [\n  {\n    binary: {\n      output: {\n        data: Buffer.from(text).toString(\"base64\"),\n        mimeType: \"text/plain\",\n        fileName: \"ausgabe.txt\"\n      }\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        80
+      ],
+      "id": "7ba90609-3ea5-4076-aa7c-3ec373aa8f45",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Data Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Data Analysis Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Data Analysis Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6f74a440-8050-4ec3-ab8d-eed939ef6379",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "39f23e937e410d79eeccfc5d5a5a47af7bb1fc9d3d80f6ce9fcb41e0a4f0f192"
+  },
+  "id": "ywFOi0EwY37tfo04",
+  "tags": []
+}

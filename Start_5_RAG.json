@@ -1,0 +1,312 @@
+{
+  "name": "Uebung_3_RAG",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "4518c3c2-2121-4f42-99a7-e3faa9764afa",
+      "name": "Chat Trigger",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -368,
+        32
+      ],
+      "webhookId": "4a6931cb-6474-4127-bbd5-416245b7347c"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful FAQ assistant. Your task is to answer user questions using the FAQ knowledge base available through the FAQ Vector Store tool.\n\nWhen a user asks a question:\n1. Use the FAQ Vector Store tool to search for relevant information\n2. Provide clear, accurate answers based on the retrieved FAQ content\n3. If the information is not in the FAQ, politely let the user know and offer to help in other ways\n4. Be friendly, concise, and helpful in your responses"
+        }
+      },
+      "id": "e5828d45-ac21-4a71-baff-53c015944a34",
+      "name": "FAQ Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "d36cc5a8-a42e-45a0-9bdf-f2b23cf29168",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        208
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "p9PIVMH9BBlx9Njh",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "93ab0256-acdd-42b3-83a3-4f6c9ff07848",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search the FAQ knowledge base for answers to user questions",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "id",
+          "value": "vector_store_key"
+        }
+      },
+      "id": "6f3b344a-7825-4115-b799-607c5010b557",
+      "name": "FAQ Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "vector_store_key"
+        },
+        "clearStore": true
+      },
+      "id": "e182a9b2-2390-4e4a-ad74-b2d16ffc4720",
+      "name": "FAQ Vector Store Insert",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "8165e0aa-45b3-4c54-b93d-f985032690a0",
+      "name": "OpenAI Embeddings Insert",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        1072
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "kE7SApgfssn85WOA",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "196aea16-d30f-467b-9f69-eafb61900f40",
+      "name": "OpenAI Embeddings Retrieve",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        176,
+        416
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "p9PIVMH9BBlx9Njh",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Upload File",
+        "formDescription": "Upload File",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "File",
+              "fieldType": "file",
+              "acceptFileTypes": ".pdf,.csv"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -384,
+        864
+      ],
+      "id": "243f51ce-36c6-4906-bd5f-5bf86cf06092",
+      "name": "On form submission",
+      "webhookId": "5f99dbe5-90be-4fb6-b3ba-0573935f6f62"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "File",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -176,
+        864
+      ],
+      "id": "05680774-a530-44cf-b318-1cb688d524d7",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        336,
+        1040
+      ],
+      "id": "eaceb5af-27a0-46ff-a754-bd251eddb3bf",
+      "name": "Default Data Loader"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "FAQ Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "FAQ Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "FAQ Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FAQ Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "FAQ Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Embeddings Insert": {
+      "ai_embedding": [
+        [
+          {
+            "node": "FAQ Vector Store Insert",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Embeddings Retrieve": {
+      "ai_embedding": [
+        [
+          {
+            "node": "FAQ Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "FAQ Vector Store Insert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "FAQ Vector Store Insert",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2da0385f-539d-447f-8dfe-3682bd9f6a59",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "39f23e937e410d79eeccfc5d5a5a47af7bb1fc9d3d80f6ce9fcb41e0a4f0f192"
+  },
+  "id": "Pt3hrBSR54OBx4G1",
+  "tags": []
+}

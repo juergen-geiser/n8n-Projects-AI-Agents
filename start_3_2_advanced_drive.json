@@ -1,0 +1,275 @@
+{
+  "name": "start_3_2_advanced_drive",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Bitte analysiere die TXT-Datei: {{ $json.data }}",
+        "options": {
+          "systemMessage": "Du bist ein erfahrener Kundendienstmitarbeiter und kannst gut mit Bestellungen umgehen. Deine Aufgabe ist es, die bereitgestellten TXT-Daten gründlich zu analysieren.\n\nFühre folgende Analysen durch:\n1. Bestellübersicht: Anzahl der Bestellungen\n2. Auskunft über die Bestellung\n3. Nette Anschreiben an die Person"
+        }
+      },
+      "id": "79d7c953-af9a-4eee-9bd9-6e90e98bfee6",
+      "name": "Data Analysis Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        768,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "5734ef99-6e1c-40ad-a67b-078e6d78ba98",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        688,
+        240
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "p8Y3mHcGV3geGEgD",
+          "name": "OpenAi account 67"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "Session_2"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        864,
+        240
+      ],
+      "id": "7b9039db-178d-4c78-a9b3-68ec9afec1de",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFile",
+        "fileToWatch": {
+          "__rl": true,
+          "value": "1IdVfQ-qZYmWVbioB5SsHXvCdkrsIZ26k",
+          "mode": "list",
+          "cachedResultName": "bestellung.txt",
+          "cachedResultUrl": "https://drive.google.com/file/d/1IdVfQ-qZYmWVbioB5SsHXvCdkrsIZ26k/view?usp=drivesdk"
+        }
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        96,
+        0
+      ],
+      "id": "db2ecbfb-15f3-47d1-8f81-ec71359f3fc9",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "j1dmVhU92wYjSsdE",
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {
+          "binaryPropertyName": "data",
+          "fileName": "={{ $json.name }}"
+        }
+      },
+      "id": "e71647de-63cb-4e18-8947-5b688db1befe",
+      "name": "Download File",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        320,
+        0
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "j1dmVhU92wYjSsdE",
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "id": "a0efac04-dd29-4298-b762-aa3c246ef9eb",
+      "name": "Extract File Content",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        544,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.first().json.output;\n\nreturn [\n  {\n    binary: {\n      data: {\n        data: Buffer.from(text).toString(\"base64\"),\n        mimeType: \"text/plain\",\n        fileName: \"analyse.txt\"\n      }\n    }\n  }\n];"
+      },
+      "id": "77569e4d-953d-4ced-8f71-344ff2b2fc01",
+      "name": "Convert to Binary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "name": "analyse.txt",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "id": "2824596c-029e-4811-b5bb-3663df402d0e",
+      "name": "Upload File",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1344,
+        0
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "j1dmVhU92wYjSsdE",
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Data Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Data Analysis Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Analysis Agent": {
+      "main": [
+        [
+          {
+            "node": "Convert to Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "Extract File Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract File Content": {
+      "main": [
+        [
+          {
+            "node": "Data Analysis Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to Binary": {
+      "main": [
+        [
+          {
+            "node": "Upload File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "011b87e5-bb38-4cba-ac1a-05edb75bfc2e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "39f23e937e410d79eeccfc5d5a5a47af7bb1fc9d3d80f6ce9fcb41e0a4f0f192"
+  },
+  "id": "fvrBIP0tBrweZSXv",
+  "tags": []
+}
